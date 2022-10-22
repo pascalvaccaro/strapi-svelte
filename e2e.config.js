@@ -12,7 +12,6 @@ module.exports = {
   }, {
     name: "e2e:website",
     cwd: "./website",
-    interpreter: "/usr/bin/bash",
     script: "npm",
     args: "run preview",
     restart_delay: 2500,
