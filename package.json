@@ -1,0 +1,38 @@
+{
+  "name": "strapi-svelte",
+  "version": "1.0.0",
+  "description": "A template repository to set up a fullstack JS web environment",
+  "scripts": {
+    "build:admin": "(cd admin && yarn build)",
+    "build:website": "(cd website && npm run build)",
+    "build": "concurrently \"npm run build:admin\" \"npm run build:website\"",
+    "predev": "pm2 stop e2e.config.js; echo",
+    "dev": "pm2 startOrRestart dev.config.js",
+    "dev:admin": "pm2 startOrRestart dev.config.js --only dev:admin",
+    "dev:website": "pm2 startOrRestart dev.config.js --only dev:website",
+    "pretest": "rimraf ./admin/.tmp/cypress.db; pm2 stop all; echo",
+    "test": "pm2 start e2e.config.js",
+    "e2e:open": "cypress open",
+    "e2e:run": "cypress run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pascalvaccaro/strapi-svelte.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pascalvaccaro/strapi-svelte/issues"
+  },
+  "homepage": "https://github.com/pascalvaccaro/strapi-svelte#readme",
+  "devDependencies": {
+    "concurrently": "^7.5.0",
+    "cypress": "^10.10.0",
+    "pm2": "^5.2.2",
+    "rimraf": "^3.0.2"
+  },
+  "dependencies": {
+    "cy2": "^2.1.0"
+  }
+}
