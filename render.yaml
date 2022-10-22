@@ -1,0 +1,70 @@
+previewsEnabled: true
+services:
+  - name: website
+    type: web
+    env: node
+    region: frankfurt
+    rootDir: website
+    buildCommand: npm install && npm run build
+    buildFilter:
+      paths:
+        - website/src/**/*
+        - website/static/**/*
+    startCommand: node build/index.js
+    autoDeploy: false
+    envVars:
+      - fromGroup: strapi-auth
+      - key: NODE_VERSION
+        value: ~16.13.0
+      - key: PUBLIC_STRAPI_URL
+        fromService:
+          name: admin
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+  - name: admin
+    type: web
+    env: node
+    rootDir: admin
+    plan: starter
+    region: frankfurt
+    buildCommand: yarn install && yarn build
+    startCommand: yarn start
+    healthCheckPath: /_health
+    autoDeploy: false
+    buildFilter:
+      paths:
+      - admin/config/**/*
+      - admin/src/**/*
+    disk:
+      name: strapi-uploads
+      mountPath: /opt/render/project/src/public/uploads
+      sizeGB: 2
+    envVars:
+      - fromGroup: strapi-auth
+      - key: NODE_VERSION
+        value: ~16.13.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: strapi
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
+      - key: APP_KEYS
+        generateValue: true
+      - key: API_TOKEN_SALT
+        generateValue: true
+
+databases:
+  - name: strapi
+    plan: starter
+    region: frankfurt
+
+envVarGroups:
+- name: strapi-auth
+  envVars:
+    - key: STRAPI_WEBSITE_TOKEN
+      generateValue: true
