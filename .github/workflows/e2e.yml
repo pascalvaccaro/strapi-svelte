@@ -1,0 +1,49 @@
+name: 'Test Preview Environment'
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  check:
+    name: 'Get Preview Environment URL'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      env_status: ${{ steps.wait.outputs.env_status }}
+      env_url: ${{ steps.wait.outputs.env_url }}  
+    steps: 
+      - uses: actions/checkout@v2
+      - uses: pascalvaccaro/check-render-preview@v1.0.2
+        id: admin
+        with:
+          SERVICE_NAME: admin
+      - uses: pascalvaccaro/check-render-preview@v1.0.2
+        if: ${{ steps.admin.outputs.env_status == 'success' }}
+        id: wait
+        with:
+          SERVICE_NAME: website
+  e2e:
+    name: 'Run end-to-end test suite with Cypress'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: check
+    if: ${{ needs.check.outputs.env_status == 'success' && startsWith(needs.check.outputs.env_url, 'https://') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        containers: [1, 2]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - name: Install dependencies
+        run: npm install
+      - name: Run Cypress suite
+        run: npx cy2 run --record --key myKey --parallel --ci-build-id ${{ github.run_id }}-${{ github.run_attempt }}
+        env:
+          CYPRESS_BASE_URL: ${{ needs.check.outputs.env_url }}
+          # Uncomment the line below once you configured and deployed your Sorry-Cypress Dashboard
+          # CYPRESS_API_URL: <your_director_api_url>
